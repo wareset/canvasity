@@ -2,12 +2,12 @@ import { Layer } from './Layer';
 import { _DrawContext } from './DrawContext';
 export declare class Renderer {
     readonly canvas: HTMLCanvasElement;
-    readonly hidden1: HTMLCanvasElement;
-    readonly hidden2: HTMLCanvasElement;
+    readonly _hidden1: HTMLCanvasElement;
+    readonly _hidden2: HTMLCanvasElement;
     readonly ctx: CanvasRenderingContext2D;
-    readonly htx1: CanvasRenderingContext2D;
-    readonly htx2: CanvasRenderingContext2D;
-    readonly dtx: _DrawContext;
+    readonly _htx1: CanvasRenderingContext2D;
+    readonly _htx2: CanvasRenderingContext2D;
+    readonly _dtx: _DrawContext;
     readonly stage: Layer;
     _ucaf: null | number;
     private readonly _update;

@@ -1,18 +1,18 @@
 {
-  "name": "canvacity",
+  "name": "canvasity",
   "version": "1.0.0",
   "description": "wip",
   "keywords": [
-    "canvacity"
+    "canvasity"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/wareset/canvacity#readme",
+  "homepage": "https://github.com/wareset/canvasity#readme",
   "bugs": {
-    "url": "https://github.com/wareset/canvacity/issues"
+    "url": "https://github.com/wareset/canvasity/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wareset/canvacity.git"
+    "url": "git+https://github.com/wareset/canvasity.git"
   },
   "author": "rease <cftcview@gmail.com>",
   "main": "index",

@@ -7,7 +7,7 @@ interface ILoopList {
 }
 export declare class Layer {
     draw: (ctx: _DrawContext) => void;
-    readonly renderer: Renderer;
+    readonly renderer: Renderer | null;
     readonly parent: Layer | null;
     readonly children: Readonly<Layer[]>;
     angle: number;
@@ -23,14 +23,16 @@ export declare class Layer {
         x: number;
         y: number;
     };
-    _ecolor1: string;
-    _ecolor2: string;
-    transform: DOMMatrix;
-    _rendering: boolean;
-    constructor(renderer: Layer['renderer'], draw: Layer['draw']);
+    private _ecolor1;
+    private _ecolor2;
+    private _transform;
+    private _rendering;
+    readonly shared: {
+        [key: string]: any;
+    };
+    constructor(draw: Layer['draw']);
     layer(draw: Layer['draw']): Layer;
     render(): void;
-    update(): void;
     attach(shape: Layer, index?: number): void;
     detach(): void;
     detachChildren(): void;

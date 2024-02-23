@@ -18,10 +18,23 @@ interface ILoopList {
 
 // const FILL_COLOR = '#fff'
 
+const _attachLayerDeep = (renderer: Renderer, layer: Layer) => {
+  // @ts-ignore
+  layer.renderer = renderer
+  for (const type in layer._events) renderer._event(type as any, true)
+  for (let a = layer.children, i = a.length; i-- > 0; ) _attachLayerDeep(renderer, a[i])
+}
+const _detachLayerDeep = (renderer: Renderer, layer: Layer) => {
+  // @ts-ignore
+  layer.renderer = null
+  for (const type in layer._events) renderer._event(type as any, true)
+  for (let a = layer.children, i = a.length; i-- > 0; ) _detachLayerDeep(renderer, a[i])
+}
+
 export class Layer {
   draw: (ctx: _DrawContext) => void
+  readonly renderer: Renderer | null
 
-  readonly renderer: Renderer
   readonly parent: Layer | null
   readonly children: Readonly<Layer[]>
 
@@ -35,15 +48,17 @@ export class Layer {
 
   pivot: { x: number; y: number }
 
-  _ecolor1: string
-  _ecolor2: string
-  transform: DOMMatrix
+  private _ecolor1: string
+  private _ecolor2: string
+  private _transform: DOMMatrix
 
-  _rendering: boolean
+  private _rendering: boolean
 
-  constructor(renderer: Layer['renderer'], draw: Layer['draw']) {
-    this.renderer = renderer
+  readonly shared: { [key: string]: any }
+
+  constructor(draw: Layer['draw']) {
     this.draw = draw
+    this.renderer = null
 
     this.parent = null
     this.children = []
@@ -63,119 +78,136 @@ export class Layer {
     this._ecolor1 = ''
     this._ecolor2 = ''
 
-    this.transform = null as any
+    this._transform = null as any
 
     this._rendering = false
+
+    this.shared = {}
   }
 
   layer(draw: Layer['draw']) {
-    const layer = new Layer(this.renderer, draw)
+    const layer = new Layer(draw)
     this.attach(layer)
     return layer
   }
 
   render() {
     const renderer = this.renderer
-    const ctx = renderer.ctx
-    const htx1 = renderer.htx1
-    const htx2 = renderer.htx2
-    const dtx = renderer.dtx
+    if (renderer) {
+      const ctx = renderer.ctx
+      const htx1 = renderer._htx1
+      const htx2 = renderer._htx2
+      const dtx = renderer._dtx
 
-    let _htx1: CanvasRenderingContext2D | undefined
-    let _htx2: CanvasRenderingContext2D | undefined
+      let _htx1: CanvasRenderingContext2D | undefined
+      let _htx2: CanvasRenderingContext2D | undefined
 
-    ctx.save(), htx1.save(), htx2.save()
+      ctx.save(), htx1.save(), htx2.save()
 
-    dtx._a = []
-    dtx._c = ctx
-    dtx.layer = this
-    dtx.angle = this.angle
-    dtx.scale = this.scale
-    dtx.place = this.place
-    dtx.pivot = this.pivot
+      dtx._a = []
+      dtx._c = ctx
+      dtx.layer = this
+      dtx.angle = this.angle
+      dtx.scale = this.scale
+      dtx.place = this.place
+      dtx.pivot = this.pivot
 
-    this.draw(dtx)
+      this.draw(dtx)
 
-    if (this.parent && !this.parent._rendering) {
-      const t = this.parent.transform
-      ctx.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
-    }
-
-    // CanvasTransform
-    this.place = dtx.place
-    ctx.translate(dtx.place.x, dtx.place.y)
-    this.scale = dtx.scale
-    ctx.scale(dtx.scale.x, dtx.scale.y)
-    this.angle = dtx.angle
-    ctx.rotate(dtx.angle * PI180)
-    this.pivot = dtx.pivot
-    ctx.translate(-dtx.pivot.x, -dtx.pivot.y)
-
-    this.transform = ctx.getTransform()
-    if (this._ecount) {
-      const t = this.transform
-      if (renderer._rendering) {
-        this._ecolor1 = number2color(renderer._layers.length)
-        this._ecolor2 = number2color(16e6 - renderer._layers.length)
-        renderer._layers.push(this)
+      if (this.parent && !this.parent._rendering) {
+        const t = this.parent._transform
+        ctx.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
       }
 
-      _htx1 = htx1
-      _htx2 = htx2
-      htx1.fillStyle = this._ecolor1
-      htx1.strokeStyle = this._ecolor1
-      htx1.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
-      htx2.fillStyle = this._ecolor2
-      htx2.strokeStyle = this._ecolor2
-      htx2.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
+      // CanvasTransform
+      this.place = dtx.place
+      ctx.translate(dtx.place.x, dtx.place.y)
+      this.scale = dtx.scale
+      ctx.scale(dtx.scale.x, dtx.scale.y)
+      this.angle = dtx.angle
+      ctx.rotate(dtx.angle * PI180)
+      this.pivot = dtx.pivot
+      ctx.translate(-dtx.pivot.x, -dtx.pivot.y)
+
+      this._transform = ctx.getTransform()
+      if (this._ecount) {
+        const t = this._transform
+        if (renderer._rendering) {
+          this._ecolor1 = number2color(renderer._layers.length)
+          this._ecolor2 = number2color(16e6 - renderer._layers.length)
+          renderer._layers.push(this)
+        }
+
+        _htx1 = htx1
+        _htx2 = htx2
+        htx1.fillStyle = this._ecolor1
+        htx1.strokeStyle = this._ecolor1
+        htx1.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
+        htx2.fillStyle = this._ecolor2
+        htx2.strokeStyle = this._ecolor2
+        htx2.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
+      }
+
+      ctx.save(), htx1.save(), htx2.save()
+      for (let a = dtx._a, i = 0, l = a.length; i < l; i++) a[i][0](ctx, a[i][1], _htx1, _htx2)
+      ctx.restore(), htx1.restore(), htx2.restore()
+
+      this._rendering = true
+      for (let a = this.children, i = 0; i < a.length; i++) a[i].render()
+      this._rendering = false
+      ctx.restore(), htx1.restore(), htx2.restore()
     }
-
-    ctx.save(), htx1.save(), htx2.save()
-    for (let a = dtx._a, i = 0, l = a.length; i < l; i++) a[i][0](ctx, a[i][1], _htx1, _htx2)
-    ctx.restore(), htx1.restore(), htx2.restore()
-
-    this._rendering = true
-    for (let a = this.children, i = 0; i < a.length; i++) a[i].render()
-    this._rendering = false
-    ctx.restore(), htx1.restore(), htx2.restore()
   }
 
-  update() {
-    this.renderer.update()
-  }
+  // update() {
+  //   if (this.renderer) this.renderer.update()
+  // }
 
   attach(shape: Layer, index?: number) {
+    const renderer = this.renderer
     const children = this.children
-    shape.detach()
-    // @ts-ignore
-    shape.parent = this
-    if (index === (index! | 0) && index > -1 && index < children.length) {
+    if (shape.parent !== this) {
+      shape.detach()
       // @ts-ignore
-      children.splice(index, 0, shape)
+      shape.parent = this
+      if (index === (index! | 0) && index < children.length) {
+        // @ts-ignore
+        children.splice(index < 0 ? 0 : index, 0, shape)
+      } else {
+        // @ts-ignore
+        children.push(shape)
+      }
+
+      if (renderer) renderer.update(), _attachLayerDeep(renderer, this)
     } else {
+      const idx = children.lastIndexOf(this)
       // @ts-ignore
-      children.push(shape)
+      idx < 0 || children.splice(idx, 1)
+
+      if (index === (index! | 0) && index < children.length) {
+        if (index < 0) index = 0
+        // @ts-ignore
+        children.splice(index, 0, shape)
+      } else {
+        // @ts-ignore
+        index = children.push(shape) - 1
+      }
+
+      if (renderer && index !== idx) renderer.update()
     }
-    if (shape._events) {
-      const renderer = this.renderer
-      for (const type in this._events) renderer._event(type as any, true)
-    }
-    this.update()
   }
 
   detach() {
     if (this.parent) {
-      const children = this.parent.children
-      const index = children.lastIndexOf(this)
+      const renderer = this.renderer
+      const parentChildren = this.parent.children
+      const idx = parentChildren.lastIndexOf(this)
       // @ts-ignore
-      index < 0 || children.splice(index, 1)
+      idx < 0 || parentChildren.splice(idx, 1)
       // @ts-ignore
       this.parent = null
-      if (this._events) {
-        const renderer = this.renderer
-        for (const type in this._events) renderer._event(type as any, false)
-      }
-      this.update()
+
+      if (renderer) renderer.update(), _detachLayerDeep(renderer, this)
     }
   }
 
@@ -196,7 +228,7 @@ export class Layer {
       first.p = first.n = first
     }
 
-    const sub = {
+    let sub = {
       p: null,
       n: null,
       f: callback
@@ -204,14 +236,13 @@ export class Layer {
     ;(sub.p = (sub.n = first).p).n = sub.n.p = sub
 
     this._ecount!++
-    this.renderer._event(type, true)
-    this.update()
+    if (this.renderer) this.renderer._event(type, true), this.renderer.update()
     return () => {
-      if (sub.p !== sub) {
+      if (sub) {
         this._ecount!--
-        this.renderer._event(type, false)
+        if (this.renderer) this.renderer._event(type, false)
         ;(sub.p.n = sub.n), (sub.n.p = sub.p)
-        ;(sub.f = noop), (sub.p = sub)
+        ;(sub.f = noop), (sub = null as any)
       }
     }
   }

@@ -9,13 +9,13 @@ import { scale } from 'math-safe'
 
 const addEvent = (type: string, renderer: Renderer) => {
   let E = renderer.canvas
-  const htx1 = renderer.htx1
-  const htx2 = renderer.htx2
+  const htx1 = renderer._htx1
+  const htx2 = renderer._htx2
   const fn = (e: any) => {
     let xy: any
     if ('clientX' in e) xy = e
     else if ('touches' in e && e.touches.length) xy = e.touches[0]
-    if (!xy) console.error('Bad Canvacity event: ' + type)
+    if (!xy) console.error('Bad Canvasity event: ' + type)
     else {
       // console.time('event')
       
@@ -67,13 +67,13 @@ const addEvent = (type: string, renderer: Renderer) => {
 
 export class Renderer {
   readonly canvas: HTMLCanvasElement
-  readonly hidden1: HTMLCanvasElement
-  readonly hidden2: HTMLCanvasElement
+  readonly _hidden1: HTMLCanvasElement
+  readonly _hidden2: HTMLCanvasElement
   readonly ctx: CanvasRenderingContext2D
-  readonly htx1: CanvasRenderingContext2D
-  readonly htx2: CanvasRenderingContext2D
+  readonly _htx1: CanvasRenderingContext2D
+  readonly _htx2: CanvasRenderingContext2D
 
-  readonly dtx: _DrawContext
+  readonly _dtx: _DrawContext
   readonly stage: Layer
 
   _ucaf: null | number
@@ -84,9 +84,11 @@ export class Renderer {
   _rendering: boolean
 
   constructor(canvas?: HTMLCanvasElement) {
-    this.dtx = new _DrawContext()
-    this.stage = new Layer(this, noop)
-    this.stage._ecount = 9
+    this._dtx = new _DrawContext()
+    this.stage = new Layer(noop)
+    // @ts-ignore
+    this.stage.renderer = this
+    this.stage._ecount = 9 // (нужен чтобы стейдж всегда был первым в массиве)
 
     this._ucaf = null
     this._update = () => {
@@ -100,8 +102,8 @@ export class Renderer {
     this.canvas = canvas || (canvas = document.createElement('canvas'))
     this.ctx = canvas.getContext('2d')!
 
-    this.htx1 = (this.hidden1 = document.createElement('canvas')).getContext('2d', { alpha: !1 })!
-    this.htx2 = (this.hidden2 = document.createElement('canvas')).getContext('2d', { alpha: !1 })!
+    this._htx1 = (this._hidden1 = document.createElement('canvas')).getContext('2d', { alpha: !1 })!
+    this._htx2 = (this._hidden2 = document.createElement('canvas')).getContext('2d', { alpha: !1 })!
 
     this.resize(canvas.width, canvas.height)
   }
@@ -112,8 +114,8 @@ export class Renderer {
 
   resize(width: number, height: number) {
     const canvas = this.canvas
-    const hidden1 = this.hidden1
-    const hidden2 = this.hidden2
+    const hidden1 = this._hidden1
+    const hidden2 = this._hidden2
     ;(canvas.width = width), (canvas.height = height)
     ;(hidden1.width = width), (hidden1.height = height)
     ;(hidden2.width = width), (hidden2.height = height)
@@ -128,16 +130,16 @@ export class Renderer {
     }
     this._layers = []
     // @ts-ignore
-    this.dtx.WIDTH = width
+    this._dtx.WIDTH = width
     // @ts-ignore
-    this.dtx.HEIGHT = height
+    this._dtx.HEIGHT = height
 
     // this.ctx.reset()
     // this.htx1.reset()
     // this.htx2.reset()
     this.ctx.clearRect(0, 0, width, height)
-    this.htx1.clearRect(0, 0, width, height)
-    this.htx2.clearRect(0, 0, width, height)
+    this._htx1.clearRect(0, 0, width, height)
+    this._htx2.clearRect(0, 0, width, height)
 
     this._rendering = true
     this.stage.render()

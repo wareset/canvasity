@@ -1,3 +1,3 @@
-# canvacity
+# canvasity
 
 wip
