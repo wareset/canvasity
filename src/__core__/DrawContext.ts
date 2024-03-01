@@ -169,6 +169,7 @@ const rect = (
     htx2!.rect.apply(htx2, args)
   }
 }
+// 99 (Released 2022-03-01)
 const roundRect = (
   ctx: CanvasRenderingContext2D,
   args: any,
@@ -302,23 +303,24 @@ const fillStyle = (ctx: CanvasRenderingContext2D, val: any) => {
 const strokeStyle = (ctx: CanvasRenderingContext2D, val: any) => {
   ctx.strokeStyle = val
 }
+// 52 (Released 2016-07-20)
+// not in safari
+// const filter = (ctx: CanvasRenderingContext2D, val: any) => {
+//   ctx.filter = val
+// }
 
-const filter = (ctx: CanvasRenderingContext2D, val: any) => {
-  ctx.filter = val
-}
-
-const imageSmoothingEnabled = (
-  ctx: CanvasRenderingContext2D,
-  val: any
-) => {
-  ctx.imageSmoothingEnabled = val
-}
-const imageSmoothingQuality = (
-  ctx: CanvasRenderingContext2D,
-  val: any
-) => {
-  ctx.imageSmoothingQuality = val
-}
+// const imageSmoothingEnabled = (
+//   ctx: CanvasRenderingContext2D,
+//   val: any
+// ) => {
+//   ctx.imageSmoothingEnabled = val
+// }
+// const imageSmoothingQuality = (
+//   ctx: CanvasRenderingContext2D,
+//   val: any
+// ) => {
+//   ctx.imageSmoothingQuality = val
+// }
 
 const lineCap = (
   ctx: CanvasRenderingContext2D,
@@ -394,18 +396,19 @@ const shadowOffsetY = (ctx: CanvasRenderingContext2D, val: any) => {
   ctx.shadowOffsetY = val
 }
 
-const direction = (
-  ctx: CanvasRenderingContext2D,
-  val: any,
-  htx1?: CanvasRenderingContext2D,
-  htx2?: CanvasRenderingContext2D
-) => {
-  ctx.direction = val
-  if (htx2) {
-    htx1!.direction = val
-    htx2!.direction = val
-  }
-}
+// 77 (Released 2019-09-10)
+// const direction = (
+//   ctx: CanvasRenderingContext2D,
+//   val: any,
+//   htx1?: CanvasRenderingContext2D,
+//   htx2?: CanvasRenderingContext2D
+// ) => {
+//   ctx.direction = val
+//   if (htx2) {
+//     htx1!.direction = val
+//     htx2!.direction = val
+//   }
+// }
 const font = (
   ctx: CanvasRenderingContext2D,
   val: any,
@@ -418,18 +421,20 @@ const font = (
     htx2!.font = val
   }
 }
-const fontKerning = (
-  ctx: CanvasRenderingContext2D,
-  val: any,
-  htx1?: CanvasRenderingContext2D,
-  htx2?: CanvasRenderingContext2D
-) => {
-  ctx.fontKerning = val
-  if (htx2) {
-    htx1!.fontKerning = val
-    htx2!.fontKerning = val
-  }
-}
+// 99 (Released 2022-03-01)
+// not in safari
+// const fontKerning = (
+//   ctx: CanvasRenderingContext2D,
+//   val: any,
+//   htx1?: CanvasRenderingContext2D,
+//   htx2?: CanvasRenderingContext2D
+// ) => {
+//   ctx.fontKerning = val
+//   if (htx2) {
+//     htx1!.fontKerning = val
+//     htx2!.fontKerning = val
+//   }
+// }
 const textAlign = (
   ctx: CanvasRenderingContext2D,
   val: any,
@@ -454,6 +459,8 @@ const textBaseline = (
     htx2!.textBaseline = val
   }
 }
+
+type CanvasImageSource = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | OffscreenCanvas //| VideoFrame
 
 // prettier-ignore
 export class _DrawContext {
@@ -490,6 +497,8 @@ export class _DrawContext {
   //
   // CanvasDrawImage
   //
+  // ImageBitmap safari 15 (Released 2021-09-20)s
+  // SVGImageElement safari 17 (Released 2023-09-18)
   drawImage(image: CanvasImageSource, dx: number, dy: number): void;
   drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
   drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
@@ -533,9 +542,12 @@ export class _DrawContext {
   set strokeStyle(value: string | CanvasGradient | CanvasPattern) {
     this._a.push([strokeStyle, value])
   }
-  createConicGradient(startAngle: number, x: number, y: number): CanvasGradient {
-    return this._c.createConicGradient(startAngle, x, y)
-  }
+  // 99 (Released 2022-03-01)
+  // safari 16.1 (Released 2022-10-24)
+  // firefox 112 (Released 2023-04-11)
+  // createConicGradient(startAngle: number, x: number, y: number): CanvasGradient {
+  //   return this._c.createConicGradient(startAngle, x, y)
+  // }
   createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient {
     return this._c.createLinearGradient(x0, y0, x1, y1)
   }
@@ -549,9 +561,11 @@ export class _DrawContext {
   //
   // CanvasFilters
   //
-  set filter(value: string) {
-    this._a.push([filter, value])
-  }
+  // 52 (Released 2016-07-20)
+  // not in safari
+  // set filter(value: string) {
+  //   this._a.push([filter, value])
+  // }
 
   //
   // CanvasImageData
@@ -569,12 +583,15 @@ export class _DrawContext {
   //
   // CanvasImageSmoothing
   //
-  set imageSmoothingEnabled(value: boolean) {
-    this._a.push([imageSmoothingEnabled, value])
-  }
-  set imageSmoothingQuality(value: ImageSmoothingQuality) {
-    this._a.push([imageSmoothingQuality, value])
-  }
+  // safari 9.3 (Released 2016-03-21)
+  // set imageSmoothingEnabled(value: boolean) {
+  //   this._a.push([imageSmoothingEnabled, value])
+  // }
+  // 54 (Released 2016-10-12)
+  // not in firefox
+  // set imageSmoothingQuality(value: ImageSmoothingQuality) {
+  //   this._a.push([imageSmoothingQuality, value])
+  // }
 
   //
   // CanvasPath
@@ -615,6 +632,7 @@ export class _DrawContext {
   rect() {
     this._a.push([rect, arguments])
   }
+  // 99 (Released 2022-03-01)
   roundRect(x: number, y: number, w: number, h: number, radii?: number | DOMPointInit | (number | DOMPointInit)[]): void;
   roundRect() {
     this._a.push([roundRect, arguments])
@@ -706,15 +724,17 @@ export class _DrawContext {
   //
   // CanvasTextDrawingStyles
   //
-  set direction(value: CanvasDirection) {
-    this._a.push([direction, value])
-  }
+  // 77 (Released 2019-09-10)
+  // set direction(value: CanvasDirection) {
+  //   this._a.push([direction, value])
+  // }
   set font(value: string) {
     this._a.push([font, value])
   }
-  set fontKerning(value: CanvasFontKerning) {
-    this._a.push([fontKerning, value])
-  }
+  // 99 (Released 2022-03-01)
+  // set fontKerning(value: CanvasFontKerning) {
+  //   this._a.push([fontKerning, value])
+  // }
   set textAlign(value: CanvasTextAlign) {
     this._a.push([textAlign, value])
   }

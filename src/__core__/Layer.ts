@@ -54,7 +54,7 @@ export class Layer {
 
   private _rendering: boolean
 
-  readonly shared: { [key: string]: any }
+  readonly shared: { [key: string]: unknown }
 
   constructor(draw: Layer['draw']) {
     this.draw = draw
@@ -129,6 +129,8 @@ export class Layer {
       this.pivot = dtx.pivot
       ctx.translate(-dtx.pivot.x, -dtx.pivot.y)
 
+      // 68 (Released 2018-07-24)
+      // safari 11.3 (Released 2018-03-29)
       this._transform = ctx.getTransform()
       if (this._ecount) {
         const t = this._transform
@@ -142,6 +144,9 @@ export class Layer {
         _htx2 = htx2
         htx1.fillStyle = this._ecolor1
         htx1.strokeStyle = this._ecolor1
+
+        // Accept matrix 68 (Released 2018-07-24)
+        // Accept matrix safari 11.3 (Released 2018-03-29)
         htx1.setTransform(t.a, t.b, t.c, t.d, t.e, t.f)
         htx2.fillStyle = this._ecolor2
         htx2.strokeStyle = this._ecolor2
@@ -170,9 +175,10 @@ export class Layer {
       shape.detach()
       // @ts-ignore
       shape.parent = this
-      if (index === (index! | 0) && index < children.length) {
+      if (index === +index! && index < children.length) {
+        if ((index |= 0) < 0) index = 0
         // @ts-ignore
-        children.splice(index < 0 ? 0 : index, 0, shape)
+        children.splice(index, 0, shape)
       } else {
         // @ts-ignore
         children.push(shape)
@@ -180,20 +186,22 @@ export class Layer {
 
       if (renderer) renderer.update(), _attachLayerDeep(renderer, this)
     } else {
-      const idx = children.lastIndexOf(this)
-      // @ts-ignore
-      idx < 0 || children.splice(idx, 1)
+      const idx = children.lastIndexOf(shape)
+      index =
+        index === +index! && index < children.length
+          ? (index |= 0)
+            ? 0
+            : index
+          : children.length - (idx < 0 ? 0 : 1)
 
-      if (index === (index! | 0) && index < children.length) {
-        if (index < 0) index = 0
+      if (idx !== index) {
+        // @ts-ignore
+        idx < 0 || children.splice(idx, 1)
         // @ts-ignore
         children.splice(index, 0, shape)
-      } else {
-        // @ts-ignore
-        index = children.push(shape) - 1
-      }
 
-      if (renderer && index !== idx) renderer.update()
+        if (renderer) renderer.update()
+      }
     }
   }
 

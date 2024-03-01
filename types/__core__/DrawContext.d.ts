@@ -1,4 +1,5 @@
 import type { Layer } from './Layer';
+type CanvasImageSource = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | OffscreenCanvas;
 export declare class _DrawContext {
     _a: [
         (ctx: CanvasRenderingContext2D, args?: any, htx1?: CanvasRenderingContext2D, htx2?: CanvasRenderingContext2D) => void,
@@ -35,15 +36,11 @@ export declare class _DrawContext {
     stroke(path: Path2D): void;
     set fillStyle(value: string | CanvasGradient | CanvasPattern);
     set strokeStyle(value: string | CanvasGradient | CanvasPattern);
-    createConicGradient(startAngle: number, x: number, y: number): CanvasGradient;
     createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient;
     createPattern(image: CanvasImageSource, repetition: string | null): CanvasPattern | null;
     createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
-    set filter(value: string);
     putImageData(imagedata: ImageData, dx: number, dy: number): void;
     putImageData(imagedata: ImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void;
-    set imageSmoothingEnabled(value: boolean);
-    set imageSmoothingQuality(value: ImageSmoothingQuality);
     arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void;
     arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
     bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
@@ -70,9 +67,8 @@ export declare class _DrawContext {
     fillText(text: string, x: number, y: number, maxWidth?: number): void;
     measureText(text: string): TextMetrics;
     strokeText(text: string, x: number, y: number, maxWidth?: number): void;
-    set direction(value: CanvasDirection);
     set font(value: string);
-    set fontKerning(value: CanvasFontKerning);
     set textAlign(value: CanvasTextAlign);
     set textBaseline(value: CanvasTextBaseline);
 }
+export {};

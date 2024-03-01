@@ -28,7 +28,7 @@ export declare class Layer {
     private _transform;
     private _rendering;
     readonly shared: {
-        [key: string]: any;
+        [key: string]: unknown;
     };
     constructor(draw: Layer['draw']);
     layer(draw: Layer['draw']): Layer;
